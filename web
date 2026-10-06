@@ -1,0 +1,213 @@
+#define BLYNK_TEMPLATE_ID "TMPL3Gs_3rmBk"  
+#define BLYNK_TEMPLATE_NAME "Forest Safety"  
+#define BLYNK_AUTH_TOKEN "xcH6mUeNFFq57OTroiETJlnJv3R4ZjOZ"  
+  
+#define BLYNK_PRINT Serial  
+#include <WiFi.h>  
+#include <WiFiClient.h>  
+#include <BlynkSimpleEsp32.h>  
+  
+char auth[] = BLYNK_AUTH_TOKEN; char ssid[] = "PROJECT"; char pass[] 
+= "12341234";  
+  
+#include<LiquidCrystal.h>  
+#include <DHT.h>  
+#include <TinyGPS++.h>  
+  
+#define DHTPIN 4  
+#define DHTTYPE DHT11  
+#define pir 36  
+#define fire 39  
+#define buzz 27  
+#define in1 25  
+#define in2 26  
+  
+TinyGPSPlus gps;  
+HardwareSerial gpsSerial(1);  
+LiquidCrystal lcd(23, 22, 21, 19, 18, 15);  
+DHT dht(DHTPIN, DHTTYPE);  
+  
+double lat = 0; double lng = 0;  
+  
+void buz();  
+  
+void setup() {   Serial.begin(9600);   gpsSerial.begin(9600, SERIAL_8N1, 16, 17);   
+Blynk.begin(auth, ssid, pass);   lcd.begin(16, 
+2);   pinMode(pir, INPUT);  pinMode(fire, INPUT);   pinMode(buzz, OUTPUT);   pinMode(in1, OUTPUT);   pinMode(in2, OUTPUT);   dht.begin();    digitalWrite(in1, 0);   digitalWrite(in2, 0);  
+  
+  lcd.setCursor(2, 0);   lcd.print("Forest Safety");   lcd.setCursor(4, 1);   lcd.print("System");   delay(2000);  
+}  
+  
+void loop() {   Blynk.run();   while (gpsSerial.available()) {     gps.encode(gpsSerial.read());  
+  }  
+  
+if (gps.location.isUpdated()) {     lat = gps.location.lat();     lng = gps.location.lng();  
+  }   else {     lat = 
+11.400941;     lng = 
+78.160585;  
+  }  
+  
+  String locationURL = String("https://www.google.com/maps/place/") + String(lat, 6) + "," + String(lng, 6);  
+  
+  float temperature = dht.readTemperature();   float humidity = dht.readHumidity();   int P = digitalRead(pir);   int F = digitalRead(fire);  
+  
+  Serial.print("Temp: ");  
+  Serial.print(temperature);  
+  Serial.print(" °C");  
+  
+  Serial.print(" | Humidity: ");  
+  Serial.print(humidity);  
+Serial.println(" %");  
+  
+  Serial.print("PIR: ");  
+  Serial.println(P);  
+  
+  Serial.print("Flame: ");  
+  Serial.println(F);  
+  
+  lcd.clear();   lcd.setCursor(0, 0);   lcd.print("T: ");   lcd.print(temperature);   lcd.setCursor(8, 0);   lcd.print("H: ");   lcd.print(humidity);   lcd.setCursor(0, 1);   lcd.print("PIR: ");   lcd.print(P);   lcd.setCursor(7, 1);   lcd.print("FIRE: ");   lcd.print(F); delay(2500);  
+  
+  lcd.clear();   lcd.setCursor(0, 0);   lcd.print("Lat: ");   lcd.print(lat);   lcd.setCursor(0, 1);   lcd.print("Lng: ");   lcd.print(lng);   delay(2500);  
+  
+  Blynk.virtualWrite(V0, temperature);  
+  Blynk.virtualWrite(V1, humidity);    Blynk.virtualWrite(V2, P);   
+Blynk.virtualWrite(V3, F);  
+  
+  if (temperature > 38) {  
+    Serial.println("High Temperature Detected");      lcd.clear();     lcd.setCursor(0, 0); lcd.print("High 
+Temperature"); lcd.setCursor(0, 
+1); lcd.print("Detected");  
+Blynk.logEvent("alert", "High Temperature Detected");     Blynk.logEvent("location", locationURL);  
+    buz();     lcd.clear();  
+  }  
+  
+  if (humidity > 69) {  
+    Serial.println("Humidity Level is High");     lcd.clear();     lcd.setCursor(0, 0);     lcd.print("Humidity Level");     lcd.setCursor(0, 1);     lcd.print("is High");  
+    Blynk.logEvent("alert", "Humidity Level is High");     Blynk.logEvent("location", locationURL);  
+    buz();  
+  }  
+  
+  if (F == 0) {  
+Serial.println("Forest Fire Detected"); lcd.clear();  lcd.setCursor(0, 0); lcd.print("Fire Detected");     lcd.setCursor(0, 1);     lcd.print("Water Motor ON");  
+    Blynk.logEvent("alert", "Forest Fire Detected : Water Motor ON");     Blynk.logEvent("location", locationURL);     digitalWrite(in1, 1);     digitalWrite(in2, 0);     buz();     delay(1000);     digitalWrite(in1, 0);     digitalWrite(in2, 0);     lcd.clear();  
+  }  
+  
+  if (P == 1) {  
+    Serial.println("Motion Detected");     lcd.clear();     lcd.setCursor(0, 0);     lcd.print("Motion Detected");  
+Blynk.logEvent("alert", "Motion Detected in Forest Areas");  Blynk.logEvent("location", locationURL);  buz(); lcd.clear();  
+  }  
+}  
+  
+void buz() {   digitalWrite(buzz, 1);   delay(200);   digitalWrite(buzz, 0);   delay(300);   digitalWrite(buzz, 1);   delay(1000);   digitalWrite(buzz, 0);   delay(300);  
+}  
+            
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+#define BLYNK_TEMPLATE_ID "TMPL3Gs_3rmBk"  
+#define BLYNK_TEMPLATE_NAME "Forest Safety"  
+#define BLYNK_AUTH_TOKEN "xcH6mUeNFFq57OTroiETJlnJv3R4ZjOZ"  
+  
+#define BLYNK_PRINT Serial  
+#include <WiFi.h>  
+#include <WiFiClient.h>  
+#include <BlynkSimpleEsp32.h>  
+  
+char auth[] = BLYNK_AUTH_TOKEN; char ssid[] = "PROJECT"; char pass[] 
+= "12341234";  
+  
+#include<LiquidCrystal.h>  
+#include <DHT.h>  
+#include <TinyGPS++.h>  
+  
+#define DHTPIN 4  
+#define DHTTYPE DHT11  
+#define pir 36  
+#define fire 39  
+#define buzz 27  
+#define in1 25  
+#define in2 26  
+  
+TinyGPSPlus gps;  
+HardwareSerial gpsSerial(1);  
+LiquidCrystal lcd(23, 22, 21, 19, 18, 15);  
+DHT dht(DHTPIN, DHTTYPE);  
+  
+double lat = 0; double lng = 0;  
+  
+void buz();  
+  
+void setup() {   Serial.begin(9600);   gpsSerial.begin(9600, SERIAL_8N1, 16, 17);   
+Blynk.begin(auth, ssid, pass);   lcd.begin(16, 
+2);   pinMode(pir, INPUT);  pinMode(fire, INPUT);   pinMode(buzz, OUTPUT);   pinMode(in1, OUTPUT);   pinMode(in2, OUTPUT);   dht.begin();    digitalWrite(in1, 0);   digitalWrite(in2, 0);  
+  
+  lcd.setCursor(2, 0);   lcd.print("Forest Safety");   lcd.setCursor(4, 1);   lcd.print("System");   delay(2000);  
+}  
+  
+void loop() {   Blynk.run();   while (gpsSerial.available()) {     gps.encode(gpsSerial.read());  
+  }  
+  
+if (gps.location.isUpdated()) {     lat = gps.location.lat();     lng = gps.location.lng();  
+  }   else {     lat = 
+11.400941;     lng = 
+78.160585;  
+  }  
+  
+  String locationURL = String("https://www.google.com/maps/place/") + String(lat, 6) + "," + String(lng, 6);  
+  
+  float temperature = dht.readTemperature();   float humidity = dht.readHumidity();   int P = digitalRead(pir);   int F = digitalRead(fire);  
+  
+  Serial.print("Temp: ");  
+  Serial.print(temperature);  
+  Serial.print(" °C");  
+  
+  Serial.print(" | Humidity: ");  
+  Serial.print(humidity);  
+Serial.println(" %");  
+  
+  Serial.print("PIR: ");  
+  Serial.println(P);  
+  
+  Serial.print("Flame: ");  
+  Serial.println(F);  
+  
+  lcd.clear();   lcd.setCursor(0, 0);   lcd.print("T: ");   lcd.print(temperature);   lcd.setCursor(8, 0);   lcd.print("H: ");   lcd.print(humidity);   lcd.setCursor(0, 1);   lcd.print("PIR: ");   lcd.print(P);   lcd.setCursor(7, 1);   lcd.print("FIRE: ");   lcd.print(F); delay(2500);  
+  
+  lcd.clear();   lcd.setCursor(0, 0);   lcd.print("Lat: ");   lcd.print(lat);   lcd.setCursor(0, 1);   lcd.print("Lng: ");   lcd.print(lng);   delay(2500);  
+  
+  Blynk.virtualWrite(V0, temperature);  
+  Blynk.virtualWrite(V1, humidity);    Blynk.virtualWrite(V2, P);   
+Blynk.virtualWrite(V3, F);  
+  
+  if (temperature > 38) {  
+    Serial.println("High Temperature Detected");      lcd.clear();     lcd.setCursor(0, 0); lcd.print("High 
+Temperature"); lcd.setCursor(0, 
+1); lcd.print("Detected");  
+Blynk.logEvent("alert", "High Temperature Detected");     Blynk.logEvent("location", locationURL);  
+    buz();     lcd.clear();  
+  }  
+  
+  if (humidity > 69) {  
+    Serial.println("Humidity Level is High");     lcd.clear();     lcd.setCursor(0, 0);     lcd.print("Humidity Level");     lcd.setCursor(0, 1);     lcd.print("is High");  
+    Blynk.logEvent("alert", "Humidity Level is High");     Blynk.logEvent("location", locationURL);  
+    buz();  
+  }  
+  
+  if (F == 0) {  
+Serial.println("Forest Fire Detected"); lcd.clear();  lcd.setCursor(0, 0); lcd.print("Fire Detected");     lcd.setCursor(0, 1);     lcd.print("Water Motor ON");  
+    Blynk.logEvent("alert", "Forest Fire Detected : Water Motor ON");     Blynk.logEvent("location", locationURL);     digitalWrite(in1, 1);     digitalWrite(in2, 0);     buz();     delay(1000);     digitalWrite(in1, 0);     digitalWrite(in2, 0);     lcd.clear();  
+  }  
+  
+  if (P == 1) {  
+    Serial.println("Motion Detected");     lcd.clear();     lcd.setCursor(0, 0);     lcd.print("Motion Detected");  
+Blynk.logEvent("alert", "Motion Detected in Forest Areas");  Blynk.logEvent("location", locationURL);  buz(); lcd.clear();  
+  }  
+}  
+  
+void buz() {   digitalWrite(buzz, 1);   delay(200);   digitalWrite(buzz, 0);   delay(300);   digitalWrite(buzz, 1);   delay(1000);   digitalWrite(buzz, 0);   delay(300);  
+}
